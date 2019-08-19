@@ -15,14 +15,14 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/moooofly/dms-detector/probes"
+	"github.com/moooofly/dms-detector/probes/mysql"
+	"github.com/moooofly/dms-detector/probes/radar_server"
+	"github.com/moooofly/dms-detector/probes/redis"
+	"github.com/moooofly/dms-detector/probes/redis_nms"
+	"github.com/moooofly/dms-detector/probes/zookeeper"
+	"github.com/moooofly/dms-detector/util/setting"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/kedacom-dms/detector-go/probes"
-	"gitlab.com/kedacom-dms/detector-go/probes/mysql"
-	"gitlab.com/kedacom-dms/detector-go/probes/radar_server"
-	"gitlab.com/kedacom-dms/detector-go/probes/redis"
-	"gitlab.com/kedacom-dms/detector-go/probes/redis_nms"
-	"gitlab.com/kedacom-dms/detector-go/probes/zookeeper"
-	"gitlab.com/kedacom-dms/detector-go/util/setting"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
@@ -93,10 +93,10 @@ func initConfig() (err error) {
 	nolog := app.Flag("nolog", "turn off logging").Default("false").Bool()
 
 	// sub command
-	_ = app.Command("mysql", "prober for mysq")
+	_ = app.Command("mysql", "prober for mysql")
 	_ = app.Command("redis", "prober for redis")
 	_ = app.Command("redis_nms", "prober for redis_nms")
-	_ = app.Command("radar", "prober for radar")
+	_ = app.Command("radar", "prober for radar_server")
 	_ = app.Command("zookeeper", "prober for zookeeper")
 
 	prober = kingpin.MustParse(app.Parse(os.Args[1:]))

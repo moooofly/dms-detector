@@ -3,9 +3,9 @@ package zookeeper
 import (
 	"errors"
 
+	"github.com/moooofly/dms-detector/probes"
+	"github.com/moooofly/dms-detector/util/setting"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/kedacom-dms/detector-go/probes"
-	"gitlab.com/kedacom-dms/detector-go/util/setting"
 )
 
 type ZkProbeArgs struct {

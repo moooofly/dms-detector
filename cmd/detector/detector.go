@@ -8,7 +8,7 @@ import (
 	"runtime/debug"
 	"syscall"
 
-	"gitlab.com/kedacom-dms/detector-go/probes"
+	"github.com/moooofly/dms-detector/probes"
 )
 
 var APP_VERSION = "No Version Provided"
