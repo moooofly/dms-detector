@@ -15,13 +15,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/moooofly/dms-detector/pkg/setting"
 	"github.com/moooofly/dms-detector/probes"
 	"github.com/moooofly/dms-detector/probes/mysql"
 	"github.com/moooofly/dms-detector/probes/radar_server"
 	"github.com/moooofly/dms-detector/probes/redis"
 	"github.com/moooofly/dms-detector/probes/redis_nms"
 	"github.com/moooofly/dms-detector/probes/zookeeper"
-	"github.com/moooofly/dms-detector/util/setting"
 	"github.com/sirupsen/logrus"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"

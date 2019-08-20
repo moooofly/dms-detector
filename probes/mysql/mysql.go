@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/moooofly/dms-detector/pkg/setting"
 	"github.com/moooofly/dms-detector/probes"
-	"github.com/moooofly/dms-detector/util/setting"
 	"github.com/sirupsen/logrus"
 
 	_ "github.com/go-sql-driver/mysql"

@@ -3,8 +3,8 @@ package radar_server
 import (
 	"errors"
 
+	"github.com/moooofly/dms-detector/pkg/setting"
 	"github.com/moooofly/dms-detector/probes"
-	"github.com/moooofly/dms-detector/util/setting"
 	"github.com/sirupsen/logrus"
 )
 

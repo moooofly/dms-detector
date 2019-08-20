@@ -8,10 +8,21 @@ import (
 	"runtime/debug"
 	"syscall"
 
+	"github.com/moooofly/dms-detector/pkg/version"
 	"github.com/moooofly/dms-detector/probes"
 )
 
-var APP_VERSION = "No Version Provided"
+//var APP_VERSION = "No Version Provided"
+var APP_VERSION = fmt.Sprintf("%s\n%s\n| % -20s | % -40s |\n| % -20s | % -40s |\n| % -20s | % -40s |\n| % -20s | % -40s |\n| % -20s | % -40s |\n| % -20s | % -40s |\n%s\n",
+	version.Logo,
+	version.Mark,
+	"Client Version", version.ClientVersion,
+	"Go Version", version.GoVersion,
+	"UTC Build Time", version.UTCBuildTime,
+	"Git Branch", version.GitBranch,
+	"Git Tag", version.GitTag,
+	"Git Hash", version.GitHash,
+	version.Mark)
 
 func main() {
 	err := initConfig()
