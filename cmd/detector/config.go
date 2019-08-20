@@ -16,6 +16,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/moooofly/dms-detector/pkg/setting"
+	"github.com/moooofly/dms-detector/pkg/version"
 	"github.com/moooofly/dms-detector/probes"
 	"github.com/moooofly/dms-detector/probes/mysql"
 	"github.com/moooofly/dms-detector/probes/radar_server"
@@ -83,7 +84,7 @@ func initConfig() (err error) {
 	//mysqlProbeArgs := mysql.MySQLProbeArgs{}
 
 	app = kingpin.New("detector", "This is a component of dms called detector.")
-	app.Author("moooofly").Version(APP_VERSION)
+	app.Author("moooofly").Version(version.Version)
 
 	// global settings
 	isDebug = app.Flag("debug", "debug log output").Default("false").Bool()
