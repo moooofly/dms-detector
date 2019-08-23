@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/gomodule/redigo/redis"
-	"github.com/moooofly/dms-detector/pkg/setting"
+	"github.com/moooofly/dms-detector/pkg/parser"
 	"github.com/moooofly/dms-detector/probes"
 	"github.com/sirupsen/logrus"
 )
@@ -75,16 +75,16 @@ func (s *RedisNmsProbe) detect() bool {
 	s.log.Println("[detector/redis_nms] --> probe start")
 	defer s.log.Println("[detector/redis_nms] <-- probe done")
 
-	c, err := redis.Dial("tcp", setting.RedisNmsSetting.Target)
+	c, err := redis.Dial("tcp", parser.RedisNmsSetting.Target)
 	if err != nil {
 		s.log.Println("[detector/redis_nms]", err)
 		return false
 	} else {
-		s.log.Printf("[detector/redis_nms] connect Redis[%s] success\n", setting.RedisNmsSetting.Target)
+		s.log.Printf("[detector/redis_nms] connect Redis[%s] success\n", parser.RedisNmsSetting.Target)
 	}
 
-	if setting.RedisNmsSetting.Password != "" {
-		if _, err := c.Do("AUTH", setting.RedisNmsSetting.Password); err != nil {
+	if parser.RedisNmsSetting.Password != "" {
+		if _, err := c.Do("AUTH", parser.RedisNmsSetting.Password); err != nil {
 			c.Close()
 			s.log.Println("[detector/redis_nms]", err)
 			return false
@@ -94,10 +94,10 @@ func (s *RedisNmsProbe) detect() bool {
 
 	if isMaster(c) {
 		s.log.Println("[detector/redis_nms] redis role -> [master]")
-		if setting.RedisNmsSetting.Strict == "ON" {
+		if parser.RedisNmsSetting.Strict == "ON" {
 			s.log.Println("[detector/redis_nms] try to connect elector")
 			if true {
-				s.log.Printf("[detector/redis_nms] connect elector[%s] success", setting.DetectorSetting.ElectorHost)
+				s.log.Printf("[detector/redis_nms] connect elector[%s] success", parser.DetectorSetting.ElectorHost)
 				if true {
 					s.log.Println("[detector/redis_nms] elector role -> [leader]")
 					return true
@@ -106,7 +106,7 @@ func (s *RedisNmsProbe) detect() bool {
 					return false
 				}
 			} else {
-				s.log.Printf("[detector/redis_nms] connect elector[%s] failed", setting.DetectorSetting.ElectorHost)
+				s.log.Printf("[detector/redis_nms] connect elector[%s] failed", parser.DetectorSetting.ElectorHost)
 				return false
 			}
 		} else {

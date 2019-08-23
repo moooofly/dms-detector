@@ -29,7 +29,7 @@ all: lint build test
 
 build:
 	@echo "==> Building ..."
-	$(GOBUILD) -o $(BINARY) -ldflags '$(LDFLAGS)' cmd/detector/*
+	$(GOBUILD) -o $(BINARY) -ldflags '$(LDFLAGS)' .
 	@echo ""
 
 install:

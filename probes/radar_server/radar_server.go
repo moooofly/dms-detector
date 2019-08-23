@@ -3,7 +3,7 @@ package radar_server
 import (
 	"errors"
 
-	"github.com/moooofly/dms-detector/pkg/setting"
+	"github.com/moooofly/dms-detector/pkg/parser"
 	"github.com/moooofly/dms-detector/probes"
 	"github.com/sirupsen/logrus"
 )
@@ -66,7 +66,7 @@ func (s *RadarProbe) detect() bool {
 
 	s.log.Println("[detector/radar] try to connect elector")
 	if true {
-		s.log.Printf("[detector/radar] connect elector[%s] success", setting.DetectorSetting.ElectorHost)
+		s.log.Printf("[detector/radar] connect elector[%s] success", parser.DetectorSetting.ElectorHost)
 		if true {
 			s.log.Println("[detector/radar] elector role -> [leader]")
 			return true
@@ -75,7 +75,7 @@ func (s *RadarProbe) detect() bool {
 			return false
 		}
 	} else {
-		s.log.Printf("[detector/radar] connect elector[%s] failed", setting.DetectorSetting.ElectorHost)
+		s.log.Printf("[detector/radar] connect elector[%s] failed", parser.DetectorSetting.ElectorHost)
 		return false
 	}
 

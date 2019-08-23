@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/gomodule/redigo/redis"
-	"github.com/moooofly/dms-detector/pkg/setting"
+	"github.com/moooofly/dms-detector/pkg/parser"
 	"github.com/moooofly/dms-detector/probes"
 	"github.com/sirupsen/logrus"
 )
@@ -75,16 +75,16 @@ func (s *RedisProbe) detect() bool {
 	s.log.Println("[detector/redis] --> probe start")
 	defer s.log.Println("[detector/redis] <-- probe done")
 
-	c, err := redis.Dial("tcp", setting.RedisSetting.Target)
+	c, err := redis.Dial("tcp", parser.RedisSetting.Target)
 	if err != nil {
 		s.log.Println("[detector/redis]", err)
 		return false
 	} else {
-		s.log.Printf("[detector/redis] connect Redis[%s] success\n", setting.RedisSetting.Target)
+		s.log.Printf("[detector/redis] connect Redis[%s] success\n", parser.RedisSetting.Target)
 	}
 
-	if setting.RedisSetting.Password != "" {
-		if _, err := c.Do("AUTH", setting.RedisSetting.Password); err != nil {
+	if parser.RedisSetting.Password != "" {
+		if _, err := c.Do("AUTH", parser.RedisSetting.Password); err != nil {
 			c.Close()
 			s.log.Println("[detector/redis]", err)
 			return false
@@ -94,10 +94,10 @@ func (s *RedisProbe) detect() bool {
 
 	if isMaster(c) {
 		s.log.Println("[detector/redis] redis role -> [master]")
-		if setting.RedisSetting.Strict == "ON" {
+		if parser.RedisSetting.Strict == "ON" {
 			s.log.Println("[detector/redis] try to connect elector")
 			if true {
-				s.log.Printf("[detector/redis] connect elector[%s] success", setting.DetectorSetting.ElectorHost)
+				s.log.Printf("[detector/redis] connect elector[%s] success", parser.DetectorSetting.ElectorHost)
 				if true {
 					s.log.Println("[detector/redis] elector role -> [leader]")
 					return true
@@ -106,7 +106,7 @@ func (s *RedisProbe) detect() bool {
 					return false
 				}
 			} else {
-				s.log.Printf("[detector/redis] connect elector[%s] failed", setting.DetectorSetting.ElectorHost)
+				s.log.Printf("[detector/redis] connect elector[%s] failed", parser.DetectorSetting.ElectorHost)
 				return false
 			}
 		} else {

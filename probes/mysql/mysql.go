@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/moooofly/dms-detector/pkg/setting"
+	"github.com/moooofly/dms-detector/pkg/parser"
 	"github.com/moooofly/dms-detector/probes"
 	"github.com/sirupsen/logrus"
 
@@ -79,15 +79,15 @@ func (s *MySQLProbe) detect() bool {
 	defer s.log.Println("[detector/mysql] <-- probe done")
 
 	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/?timeout=%ds&charset=utf8&parseTime=True&loc=Local",
-		setting.MySQLSetting.User,
-		setting.MySQLSetting.Password,
-		setting.MySQLSetting.Target,
-		setting.MySQLSetting.ConnTimeout))
+		parser.MySQLSetting.User,
+		parser.MySQLSetting.Password,
+		parser.MySQLSetting.Target,
+		parser.MySQLSetting.ConnTimeout))
 	if err != nil {
 		s.log.Println(err)
 		return false
 	} else {
-		s.log.Printf("[detector/mysql] connect MySQL[%s] success\n", setting.MySQLSetting.Target)
+		s.log.Printf("[detector/mysql] connect MySQL[%s] success\n", parser.MySQLSetting.Target)
 	}
 
 	// TODO: is it necessary?
@@ -103,10 +103,10 @@ func (s *MySQLProbe) detect() bool {
 	}
 
 	if value == "OFF" {
-		if setting.MySQLSetting.Strict == "ON" {
+		if parser.MySQLSetting.Strict == "ON" {
 			s.log.Println("[detector/mysql] try to connect elector")
 			if true {
-				s.log.Printf("[detector/mysql] connect elector[%s] success", setting.DetectorSetting.ElectorHost)
+				s.log.Printf("[detector/mysql] connect elector[%s] success", parser.DetectorSetting.ElectorHost)
 				if true {
 					s.log.Println("[detector/mysql] elector role -> [leader]")
 					return true
@@ -115,7 +115,7 @@ func (s *MySQLProbe) detect() bool {
 					return false
 				}
 			} else {
-				s.log.Printf("[detector/mysql] connect elector[%s] failed", setting.DetectorSetting.ElectorHost)
+				s.log.Printf("[detector/mysql] connect elector[%s] failed", parser.DetectorSetting.ElectorHost)
 				return false
 			}
 		} else {

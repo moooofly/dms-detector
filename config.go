@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/moooofly/dms-detector/pkg/setting"
+	"github.com/moooofly/dms-detector/pkg/parser"
 	"github.com/moooofly/dms-detector/pkg/version"
 	"github.com/moooofly/dms-detector/probes"
 	"github.com/moooofly/dms-detector/probes/mysql"
@@ -103,7 +103,7 @@ func initConfig() (err error) {
 	prober = kingpin.MustParse(app.Parse(os.Args[1:]))
 
 	// ini 配置解析
-	setting.Load(prober)
+	parser.Load(prober)
 
 	var pb probes.Probe
 	switch prober {
@@ -234,10 +234,10 @@ func initConfig() (err error) {
 
 	router := InitRouter()
 	s := &http.Server{
-		Addr:    fmt.Sprintf(":%d", setting.DetectorSetting.Port),
+		Addr:    fmt.Sprintf(":%d", parser.DetectorSetting.Port),
 		Handler: router,
-		//ReadTimeout:    setting.ReadTimeout,
-		//WriteTimeout:   setting.WriteTimeout,
+		//ReadTimeout:    parser.ReadTimeout,
+		//WriteTimeout:   parser.WriteTimeout,
 		MaxHeaderBytes: 1 << 20,
 	}
 	if err := s.ListenAndServe(); err != nil {
@@ -253,7 +253,7 @@ func InitRouter() *gin.Engine {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 
-	//gin.SetMode(setting.ServerSetting.RunMode)
+	//gin.SetMode(parser.ServerSetting.RunMode)
 
 	// 鉴权 API
 	r.HEAD("/", headCallback)
