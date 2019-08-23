@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/moooofly/dms-detector/pkg/parser"
-	"github.com/moooofly/dms-detector/probes"
+	"github.com/moooofly/dms-detector/probe"
 	"github.com/sirupsen/logrus"
 )
 
@@ -17,7 +17,7 @@ type ZkProbe struct {
 	isStop bool
 }
 
-func NewZkProbe() probes.Probe {
+func NewZkProbe() probe.Probe {
 	return &ZkProbe{
 		cfg:    ZkProbeArgs{},
 		log:    nil,

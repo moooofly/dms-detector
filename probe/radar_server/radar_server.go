@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/moooofly/dms-detector/pkg/parser"
-	"github.com/moooofly/dms-detector/probes"
+	"github.com/moooofly/dms-detector/probe"
 	"github.com/sirupsen/logrus"
 )
 
@@ -17,7 +17,7 @@ type RadarProbe struct {
 	isStop bool
 }
 
-func NewRadarProbe() probes.Probe {
+func NewRadarProbe() probe.Probe {
 	return &RadarProbe{
 		cfg:    RadarProbeArgs{},
 		log:    nil,

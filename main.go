@@ -8,22 +8,28 @@ import (
 	"runtime/debug"
 	"syscall"
 
-	"github.com/moooofly/dms-detector/probes"
+	srv "github.com/moooofly/dms-detector/pkg/servitization"
+	"github.com/moooofly/dms-detector/probe"
+	"github.com/moooofly/dms-detector/router"
 )
 
 func main() {
-	err := initConfig()
-	if err != nil {
+	if err := srv.Init(); err != nil {
 		log.Fatalf("err : %s", err)
 	}
-	if pbi != nil && pbi.S != nil {
-		Clean(&pbi.S)
+	go func() {
+		if err := router.Launch(); err != nil {
+			log.Fatalf("err : %s", err)
+		}
+	}()
+	if srv.Pbi != nil && srv.Pbi.S != nil {
+		Clean(&srv.Pbi.S)
 	} else {
 		Clean(nil)
 	}
 }
 
-func Clean(s *probes.Probe) {
+func Clean(s *probe.Probe) {
 	signalChan := make(chan os.Signal, 1)
 	cleanupDone := make(chan bool)
 	signal.Notify(signalChan,
@@ -43,13 +49,7 @@ func Clean(s *probes.Probe) {
 			if s != nil && *s != nil {
 				(*s).Clean()
 			}
-			if cmd != nil {
-				log.Printf("clean process %d", cmd.Process.Pid)
-				cmd.Process.Kill()
-			}
-			if *isDebug {
-				saveProfiling()
-			}
+			srv.Teardown()
 			cleanupDone <- true
 		}
 	}()

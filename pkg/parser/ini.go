@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	Cfg *ini.File
+	cfg *ini.File
 
 	DetectorSetting = &detector{}
 	MySQLSetting    = &mysql{}
@@ -63,7 +63,7 @@ type radar struct {
 func Load(prober string) {
 	// TODO: 路径问题
 	var err error
-	Cfg, err = ini.Load(fmt.Sprintf("../../conf/detector.%s.ini", prober))
+	cfg, err = ini.Load(fmt.Sprintf("conf/detector.%s.ini", prober))
 	if err != nil {
 		logrus.Fatalf("Fail to parse 'conf/detector.%s.ini': %v", prober, err)
 	}
@@ -87,7 +87,7 @@ func Load(prober string) {
 }
 
 func mapTo(section string, v interface{}) {
-	err := Cfg.Section(section).MapTo(v)
+	err := cfg.Section(section).MapTo(v)
 	if err != nil {
 		logrus.Fatalf("mapto err: %v", err)
 	}

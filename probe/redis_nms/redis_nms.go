@@ -1,49 +1,49 @@
-package redis
+package redis_nms
 
 import (
 	"errors"
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/moooofly/dms-detector/pkg/parser"
-	"github.com/moooofly/dms-detector/probes"
+	"github.com/moooofly/dms-detector/probe"
 	"github.com/sirupsen/logrus"
 )
 
-type RedisProbeArgs struct {
+type RedisNmsProbeArgs struct {
 }
 
-type RedisProbe struct {
-	cfg    RedisProbeArgs
+type RedisNmsProbe struct {
+	cfg    RedisNmsProbeArgs
 	log    *logrus.Logger
 	isStop bool
 }
 
-func NewRedisProbe() probes.Probe {
-	return &RedisProbe{
-		cfg:    RedisProbeArgs{},
+func NewRedisNmsProbe() probe.Probe {
+	return &RedisNmsProbe{
+		cfg:    RedisNmsProbeArgs{},
 		log:    nil,
 		isStop: false,
 	}
 }
 
-func (s *RedisProbe) StopProbe() {
+func (s *RedisNmsProbe) StopProbe() {
 	defer func() {
 		e := recover()
 		if e != nil {
-			s.log.Printf("Stop RedisProbe crashed, %s", e)
+			s.log.Printf("Stop RedisNmsProbe crashed, %s", e)
 		} else {
-			s.log.Printf("probe RedisProbe stopped")
+			s.log.Printf("probe RedisNmsProbe stopped")
 		}
-		s.cfg = RedisProbeArgs{}
+		s.cfg = RedisNmsProbeArgs{}
 		s.log = nil
 		s = nil
 	}()
 	s.isStop = true
 }
 
-func (s *RedisProbe) Start(args interface{}, log *logrus.Logger) (err error) {
+func (s *RedisNmsProbe) Start(args interface{}, log *logrus.Logger) (err error) {
 	s.log = log
-	//s.cfg = args.(RedisProbeArgs)
+	//s.cfg = args.(RedisNmsProbeArgs)
 
 	if ok := s.detect(); ok {
 		return nil
@@ -54,7 +54,7 @@ func (s *RedisProbe) Start(args interface{}, log *logrus.Logger) (err error) {
 	return
 }
 
-func (s *RedisProbe) Clean() {
+func (s *RedisNmsProbe) Clean() {
 	s.StopProbe()
 }
 
@@ -71,49 +71,49 @@ func (s *RedisProbe) Clean() {
 //     3.1.2 如果连接建立成功，则判定所连接的 elector 的 role ，如果是 leader 则认为 detect 成功，否则认为 detect 失败
 //   3.2 如果 strict 为 off ，则直接判定 detect 失败
 // 4. 如果 role 为 slave ，则直接判定 detect 失败
-func (s *RedisProbe) detect() bool {
-	s.log.Println("[detector/redis] --> probe start")
-	defer s.log.Println("[detector/redis] <-- probe done")
+func (s *RedisNmsProbe) detect() bool {
+	s.log.Println("[detector/redis_nms] --> probe start")
+	defer s.log.Println("[detector/redis_nms] <-- probe done")
 
-	c, err := redis.Dial("tcp", parser.RedisSetting.Target)
+	c, err := redis.Dial("tcp", parser.RedisNmsSetting.Target)
 	if err != nil {
-		s.log.Println("[detector/redis]", err)
+		s.log.Println("[detector/redis_nms]", err)
 		return false
 	} else {
-		s.log.Printf("[detector/redis] connect Redis[%s] success\n", parser.RedisSetting.Target)
+		s.log.Printf("[detector/redis_nms] connect Redis[%s] success\n", parser.RedisNmsSetting.Target)
 	}
 
-	if parser.RedisSetting.Password != "" {
-		if _, err := c.Do("AUTH", parser.RedisSetting.Password); err != nil {
+	if parser.RedisNmsSetting.Password != "" {
+		if _, err := c.Do("AUTH", parser.RedisNmsSetting.Password); err != nil {
 			c.Close()
-			s.log.Println("[detector/redis]", err)
+			s.log.Println("[detector/redis_nms]", err)
 			return false
 		}
 	}
 	defer c.Close()
 
 	if isMaster(c) {
-		s.log.Println("[detector/redis] redis role -> [master]")
-		if parser.RedisSetting.Strict == "ON" {
-			s.log.Println("[detector/redis] try to connect elector")
+		s.log.Println("[detector/redis_nms] redis role -> [master]")
+		if parser.RedisNmsSetting.Strict == "ON" {
+			s.log.Println("[detector/redis_nms] try to connect elector")
 			if true {
-				s.log.Printf("[detector/redis] connect elector[%s] success", parser.DetectorSetting.ElectorHost)
+				s.log.Printf("[detector/redis_nms] connect elector[%s] success", parser.DetectorSetting.ElectorHost)
 				if true {
-					s.log.Println("[detector/redis] elector role -> [leader]")
+					s.log.Println("[detector/redis_nms] elector role -> [leader]")
 					return true
 				} else {
-					s.log.Println("[detector/redis] elector role -> [follower]")
+					s.log.Println("[detector/redis_nms] elector role -> [follower]")
 					return false
 				}
 			} else {
-				s.log.Printf("[detector/redis] connect elector[%s] failed", parser.DetectorSetting.ElectorHost)
+				s.log.Printf("[detector/redis_nms] connect elector[%s] failed", parser.DetectorSetting.ElectorHost)
 				return false
 			}
 		} else {
 			return false
 		}
 	} else {
-		s.log.Println("[detector/redis] redis role -> [non-master]")
+		s.log.Println("[detector/redis_nms] redis role -> [non-master]")
 	}
 
 	return true

@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/moooofly/dms-detector/pkg/parser"
-	"github.com/moooofly/dms-detector/probes"
+	"github.com/moooofly/dms-detector/probe"
 	"github.com/sirupsen/logrus"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -21,7 +21,7 @@ type MySQLProbe struct {
 	isStop bool
 }
 
-func NewMySQLProbe() probes.Probe {
+func NewMySQLProbe() probe.Probe {
 	return &MySQLProbe{
 		cfg:    MySQLProbeArgs{},
 		log:    nil,

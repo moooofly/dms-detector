@@ -1,82 +1,41 @@
-package main
+package servitization
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"io/ioutil"
-	"log"
-	"net/http"
 	"os"
 	"os/exec"
 	"runtime/debug"
-	"runtime/pprof"
-	"strings"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/moooofly/dms-detector/pkg/parser"
 	"github.com/moooofly/dms-detector/pkg/version"
-	"github.com/moooofly/dms-detector/probes"
-	"github.com/moooofly/dms-detector/probes/mysql"
-	"github.com/moooofly/dms-detector/probes/radar_server"
-	"github.com/moooofly/dms-detector/probes/redis"
-	"github.com/moooofly/dms-detector/probes/redis_nms"
-	"github.com/moooofly/dms-detector/probes/zookeeper"
+	"github.com/moooofly/dms-detector/probe"
+	"github.com/moooofly/dms-detector/probe/mysql"
+	"github.com/moooofly/dms-detector/probe/radar_server"
+	"github.com/moooofly/dms-detector/probe/redis"
+	"github.com/moooofly/dms-detector/probe/redis_nms"
+	"github.com/moooofly/dms-detector/probe/zookeeper"
 	"github.com/sirupsen/logrus"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
+// CLI facilities
 var (
-	// CLI facilities
 	app *kingpin.Application
 	cmd *exec.Cmd
-
-	// profiling
-	cpuProfFile          *os.File
-	memProfFile          *os.File
-	blockProfFile        *os.File
-	goroutineProfFile    *os.File
-	threadcreateProfFile *os.File
-
-	isDebug *bool
-
-	pbi    *probes.ProbeItem
-	prober string
 )
 
-type customLogFormat struct {
-	logrus.JSONFormatter
-}
+// custom
+var isDebug *bool
+var Pbi *probe.ProbeItem
+var Prober string
 
-func (f *customLogFormat) Format(entry *logrus.Entry) ([]byte, error) {
-	json_out, err := f.JSONFormatter.Format(entry)
-	if err != nil {
-		return nil, err
-	}
+func Init() (err error) {
 
-	b := &bytes.Buffer{}
-	b.WriteByte('[')
-	b.WriteString(strings.TrimRight(string(json_out), "\n"))
-	b.WriteByte(']')
-	b.WriteByte('\n')
-
-	return b.Bytes(), nil
-}
-
-func initConfig() (err error) {
-
-	// 定制 logrus 日志格式
-	/*
-		logrus.SetFormatter(&logrus.JSONFormatter{
-			FieldMap: logrus.FieldMap{
-				logrus.FieldKeyTime:  "_timestamp",
-				logrus.FieldKeyLevel: "_level",
-				logrus.FieldKeyMsg:   "message",
-			},
-		})
-	*/
+	// TODO: 定制 logrus 日志格式
 
 	logrus.SetOutput(os.Stdout)
 	logrus.SetLevel(logrus.InfoLevel)
@@ -100,13 +59,13 @@ func initConfig() (err error) {
 	_ = app.Command("radar", "prober for radar_server")
 	_ = app.Command("zookeeper", "prober for zookeeper")
 
-	prober = kingpin.MustParse(app.Parse(os.Args[1:]))
+	Prober = kingpin.MustParse(app.Parse(os.Args[1:]))
 
 	// ini 配置解析
-	parser.Load(prober)
+	parser.Load(Prober)
 
-	var pb probes.Probe
-	switch prober {
+	var pb probe.Probe
+	switch Prober {
 	case "mysql":
 		pb = mysql.NewMySQLProbe()
 	case "redis":
@@ -120,15 +79,10 @@ func initConfig() (err error) {
 	default:
 		logrus.Fatal("not match any of [mysql|redis|redis_nms|radar_server|zookeeper].")
 	}
-	probes.Regist(prober, pb, nil, logrus.StandardLogger())
+	probe.Regist(Prober, pb, nil, logrus.StandardLogger())
 
 	if *isDebug {
-		cpuProfFile, _ = os.Create("cpu.prof")
-		memProfFile, _ = os.Create("memory.prof")
-		blockProfFile, _ = os.Create("block.prof")
-		goroutineProfFile, _ = os.Create("goroutine.prof")
-		threadcreateProfFile, _ = os.Create("threadcreate.prof")
-		pprof.StartCPUProfile(cpuProfFile)
+		startProfiling()
 	}
 
 	if *nolog {
@@ -232,60 +186,15 @@ func initConfig() (err error) {
 		}
 	}
 
-	router := InitRouter()
-	s := &http.Server{
-		Addr:    fmt.Sprintf(":%d", parser.DetectorSetting.Port),
-		Handler: router,
-		//ReadTimeout:    parser.ReadTimeout,
-		//WriteTimeout:   parser.WriteTimeout,
-		MaxHeaderBytes: 1 << 20,
-	}
-	if err := s.ListenAndServe(); err != nil {
-		log.Printf("Listen: %s\n", err)
-	}
-
 	return
 }
 
-func InitRouter() *gin.Engine {
-	r := gin.New()
-
-	r.Use(gin.Logger())
-	r.Use(gin.Recovery())
-
-	//gin.SetMode(parser.ServerSetting.RunMode)
-
-	// 鉴权 API
-	r.HEAD("/", headCallback)
-
-	return r
-}
-
-func headCallback(c *gin.Context) {
-	logrus.Infof("probe [%s] triggered by HaProxy HEAD request.", prober)
-	_, err := probes.Run(prober, nil)
-	if err != nil {
-		logrus.Infof("probe [%s] %s", prober, err)
-		c.String(http.StatusServiceUnavailable, "")
-	} else {
-		logrus.Infof("probe [%s] success", prober)
-		c.String(http.StatusOK, "")
+func Teardown() {
+	if cmd != nil {
+		logrus.Infof("clean process %d", cmd.Process.Pid)
+		cmd.Process.Kill()
 	}
-	// self.send_header('Content-type', 'text/html')
-}
-
-func saveProfiling() {
-	goroutine := pprof.Lookup("goroutine")
-	goroutine.WriteTo(goroutineProfFile, 1)
-
-	heap := pprof.Lookup("heap")
-	heap.WriteTo(memProfFile, 1)
-
-	block := pprof.Lookup("block")
-	block.WriteTo(blockProfFile, 1)
-
-	threadcreate := pprof.Lookup("threadcreate")
-	threadcreate.WriteTo(threadcreateProfFile, 1)
-
-	pprof.StopCPUProfile()
+	if *isDebug {
+		saveProfiling()
+	}
 }
