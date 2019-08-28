@@ -41,7 +41,7 @@ func initRouter() *gin.Engine {
 
 func headCb(c *gin.Context) {
 	prober := servitization.Prober
-	logrus.Infof("probe [%s] triggered by HaProxy HEAD request.", prober)
+	logrus.Infof("probe [%s] triggered by HAProxy HEAD request.", prober)
 	_, err := probe.Run(prober, nil)
 	if err != nil {
 		logrus.Infof("probe [%s] %s", prober, err)
