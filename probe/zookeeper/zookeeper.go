@@ -1,11 +1,16 @@
 package zookeeper
 
 import (
+	"context"
 	"errors"
+	"time"
 
 	"github.com/moooofly/dms-detector/pkg/parser"
 	"github.com/moooofly/dms-detector/probe"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+
+	pb "github.com/moooofly/dms-detector/proto"
 )
 
 type ZkProbeArgs struct {
@@ -40,17 +45,11 @@ func (s *ZkProbe) StopProbe() {
 	s.isStop = true
 }
 
-func (s *ZkProbe) Start(args interface{}, log *logrus.Logger) (err error) {
+func (s *ZkProbe) Start(args interface{}, log *logrus.Logger) error {
 	s.log = log
 	//s.cfg = args.(ZkProbeArgs)
 
-	if ok := s.detect(); ok {
-		return nil
-	} else {
-		return errors.New("detect failed")
-	}
-
-	return
+	return s.detect()
 }
 
 func (s *ZkProbe) Clean() {
@@ -60,24 +59,40 @@ func (s *ZkProbe) Clean() {
 // 判定条件
 
 // 代码逻辑
-func (s *ZkProbe) detect() bool {
+func (s *ZkProbe) detect() error {
 	s.log.Println("[detector/zookeeper] --> probe start")
 	defer s.log.Println("[detector/zookeeper] <-- probe done")
 
-	s.log.Println("[detector/zookeeper] try to connect elector")
-	if true {
-		s.log.Printf("[detector/zookeeper] connect elector[%s] success", parser.DetectorSetting.ElectorHost)
-		if true {
-			s.log.Println("[detector/zookeeper] elector role -> [leader]")
-			return true
-		} else {
-			s.log.Println("[detector/zookeeper] elector role -> [follower]")
-			return false
-		}
-	} else {
-		s.log.Printf("[detector/zookeeper] connect elector[%s] failed", parser.DetectorSetting.ElectorHost)
-		return false
+	s.log.Println("[detector/zookeeper]   --> try to connect elector")
+
+	// TODO: 连接复用问题
+	conn, err := grpc.Dial(
+		parser.DetectorSetting.ElectorHost,
+		grpc.WithInsecure(),
+		grpc.WithBlock(),
+		grpc.WithTimeout(time.Second),
+	)
+	if err != nil {
+		s.log.Printf("[detector/zookeeper] connect elector[%s] failed, err => [%v]", parser.DetectorSetting.ElectorHost, err)
+		return errors.New("connect elector failed")
+	}
+	defer conn.Close()
+
+	s.log.Printf("[detector/zookeeper] connect elector[%s] success", parser.DetectorSetting.ElectorHost)
+
+	client := pb.NewRoleServiceClient(conn)
+	obRsp, err := client.Obtain(context.Background(), &pb.ObtainReq{})
+
+	if err != nil {
+		s.log.Infof("[detector/zookeeper] Obtain role failed: %v", err)
+		return errors.New("obtain role from elector failed")
 	}
 
-	return true
+	s.log.Infof("[detector/zookeeper] role => [%s]", obRsp.GetRole())
+
+	if pb.EnumRole_Leader == obRsp.GetRole() {
+		return nil
+	} else {
+		return errors.New("role of elector is not Leader")
+	}
 }
