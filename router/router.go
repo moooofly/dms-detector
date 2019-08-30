@@ -29,10 +29,11 @@ func Launch() error {
 func initRouter() *gin.Engine {
 	r := gin.New()
 
-	r.Use(gin.Logger())
-	r.Use(gin.Recovery())
+	// NOTE: you can set gin.DebugMode for debug only
+	gin.SetMode(gin.ReleaseMode)
 
-	//gin.SetMode(parser.ServerSetting.RunMode)
+	r.Use(gin.LoggerWithWriter(servitization.Output))
+	r.Use(gin.Recovery())
 
 	r.HEAD("/", headCb)
 

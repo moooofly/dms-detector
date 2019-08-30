@@ -81,7 +81,7 @@ func (s *RedisProbe) detect() error {
 		s.log.Println("[detector/redis]", err)
 		return err
 	} else {
-		s.log.Printf("[detector/redis] connect Redis[%s] success\n", parser.RedisSetting.Target)
+		s.log.Printf("[detector/redis] connect Redis[%s] success", parser.RedisSetting.Target)
 	}
 
 	if parser.RedisSetting.Password != "" {
