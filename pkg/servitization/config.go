@@ -83,14 +83,12 @@ func Init() (err error) {
 	}
 	probe.Regist(Prober, pb, nil, logrus.StandardLogger())
 
-	// pprof setting
+	// log setting
 	if *dbg {
 		Output = os.Stdout
 		logrus.SetOutput(Output)
 		logrus.SetLevel(logrus.DebugLevel)
 	} else {
-
-		// log setting
 		if *nolog {
 			Output = ioutil.Discard
 			logrus.SetOutput(Output)
@@ -120,6 +118,7 @@ func Init() (err error) {
 		logrus.SetLevel(l)
 	}
 
+	// pprof setting
 	if *prof {
 		startProfiling()
 	}

@@ -107,7 +107,7 @@ func (s *MySQLProbe) detect() error {
 		if parser.MySQLSetting.Strict == "ON" {
 			s.log.Println("[detector/mysql]     --> try to connect elector (Strict=ON)")
 
-			// TODO: 连接复用问题
+			// FIXME: 连接复用问题
 			conn, err := grpc.Dial(
 				parser.DetectorSetting.ElectorHost,
 				grpc.WithInsecure(),
