@@ -22,7 +22,7 @@ var (
 type detector struct {
 	Port        int    `ini:"port"`
 	ElectorHost string `ini:"elector-host"`
-	LogPath     string `ini:"log-path"`
+	LogFile     string `ini:"log-file"`
 	LogLevel    string `ini:"log-level"`
 }
 
@@ -59,10 +59,9 @@ type radar struct {
 	Target string `ini:"target"`
 }
 
-func Load(prober string) {
-	// TODO: 路径问题
+func Load(prober string, confPath string) {
 	var err error
-	cfg, err = ini.Load(fmt.Sprintf("conf/detector.%s.ini", prober))
+	cfg, err = ini.Load(fmt.Sprintf("%s/detector.%s.ini", confPath, prober))
 	if err != nil {
 		logrus.Fatalf("Fail to parse 'conf/detector.%s.ini': %v", prober, err)
 	}

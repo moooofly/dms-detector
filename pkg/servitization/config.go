@@ -51,7 +51,8 @@ func Init() (err error) {
 	prof = app.Flag("prof", "generate all kinds of profile into files").Default("false").Bool()
 	daemon := app.Flag("daemon", "run detector in background").Default("false").Bool()
 	forever := app.Flag("forever", "run detector in forever, fail and retry").Default("false").Bool()
-	logfile := app.Flag("log-path", "full log file path, e.g. '/opt/log/dms/xxx.log'").Default("").String()
+	logfile := app.Flag("log-file", "log file, e.g. '/opt/log/dms/xxx.log'").Default("").String()
+	confPath := app.Flag("conf-path", "config file path, e.g. '/opt/config/dms'").Default("conf").String()
 	nolog := app.Flag("nolog", "turn off logging").Default("false").Bool()
 
 	// sub command
@@ -64,7 +65,7 @@ func Init() (err error) {
 	Prober = kingpin.MustParse(app.Parse(os.Args[1:]))
 
 	// ini 配置解析
-	parser.Load(Prober)
+	parser.Load(Prober, *confPath)
 
 	var pb probe.Probe
 	switch Prober {
@@ -99,8 +100,8 @@ func Init() (err error) {
 			}
 			Output = f
 			logrus.SetOutput(Output)
-		} else if parser.DetectorSetting.LogPath != "" {
-			f, err := os.OpenFile(parser.DetectorSetting.LogPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+		} else if parser.DetectorSetting.LogFile != "" {
+			f, err := os.OpenFile(parser.DetectorSetting.LogFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 			if err != nil {
 				logrus.Fatal(err)
 			}
