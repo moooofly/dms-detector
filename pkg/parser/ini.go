@@ -60,10 +60,12 @@ type radar struct {
 }
 
 func Load(prober string, confPath string) {
+	cf := fmt.Sprintf("%s/detector.%s.ini", confPath, prober)
+
 	var err error
-	cfg, err = ini.Load(fmt.Sprintf("%s/detector.%s.ini", confPath, prober))
+	cfg, err = ini.Load(cf)
 	if err != nil {
-		logrus.Fatalf("Fail to parse 'conf/detector.%s.ini': %v", prober, err)
+		logrus.Fatalf("Fail to parse '%s': %v", cf, err)
 	}
 
 	mapTo("detector", DetectorSetting)
