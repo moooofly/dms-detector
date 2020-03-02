@@ -1,3 +1,15 @@
+## 0.2.0 (2020-03-02)
+
+* improvement: support confPath ([cd68b44](https://github.com/moooofly/dms-detector/commit/cd68b44))
+* feat: add more controls on log output (--debug/--log-path), optimize log format ([6c92ae6](https://github.com/moooofly/dms-detector/commit/6c92ae6))
+* feat: add proto/Makefile and update .gitignore ([8029d1b](https://github.com/moooofly/dms-detector/commit/8029d1b))
+* feat: support setting conf-path by cli parameters ([460ccbb](https://github.com/moooofly/dms-detector/commit/460ccbb))
+* refactor: split pprof function from debug mode (add --prof switch) ([e806dad](https://github.com/moooofly/dms-detector/commit/e806dad))
+* refactor: update configuration in order to be consistent with other dms components ([53bf8a5](https://github.com/moooofly/dms-detector/commit/53bf8a5))
+* style: trivial adjustment of log output ([194e26a](https://github.com/moooofly/dms-detector/commit/194e26a))
+
+
+
 # 0.1.0 (2019-08-29)
 
 
