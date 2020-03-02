@@ -84,5 +84,6 @@ clean:
 	rm -f $(BINARY) $(BINARY)_*
 	rm -rf *.out
 	rm -rf *.tar.gz
+	rm -f *.prof
 	@echo ""
 

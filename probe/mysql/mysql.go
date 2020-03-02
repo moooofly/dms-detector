@@ -88,7 +88,7 @@ func (s *MySQLProbe) detect() error {
 		s.log.Println(err)
 		return err
 	} else {
-		s.log.Printf("[detector/mysql] connect MySQL[%s] success\n", parser.MySQLSetting.Target)
+		s.log.Printf("[detector/mysql] connect MySQL[%s] success", parser.MySQLSetting.Target)
 	}
 
 	// TODO: is it necessary?
@@ -100,14 +100,14 @@ func (s *MySQLProbe) detect() error {
 		s.log.Println(err)
 		return err
 	} else {
-		s.log.Printf("[detector/mysql] read_only => [%s]\n", value)
+		s.log.Printf("[detector/mysql] read_only => [%s]", value)
 	}
 
 	if value == "OFF" {
 		if parser.MySQLSetting.Strict == "ON" {
 			s.log.Println("[detector/mysql]     --> try to connect elector (Strict=ON)")
 
-			// TODO: 连接复用问题
+			// FIXME: 连接复用问题
 			conn, err := grpc.Dial(
 				parser.DetectorSetting.ElectorHost,
 				grpc.WithInsecure(),

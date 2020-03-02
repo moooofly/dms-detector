@@ -1,3 +1,5 @@
 detector
-cmd/detector/detector
+
+*.prof
 proto/*.pb.go
+*.prof

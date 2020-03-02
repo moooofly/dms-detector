@@ -3,6 +3,7 @@ package servitization
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -28,28 +29,30 @@ var (
 	cmd *exec.Cmd
 )
 
-// custom
-var isDebug *bool
+var dbg *bool
+var prof *bool
+
 var Pbi *probe.ProbeItem
 var Prober string
+var Output io.Writer
 
 func Init() (err error) {
 
-	// TODO: 定制 logrus 日志格式
-
-	logrus.SetOutput(os.Stdout)
-	logrus.SetLevel(logrus.InfoLevel)
-
-	//mysqlProbeArgs := mysql.MySQLProbeArgs{}
+	// 定制 logrus 日志格式
+	logrus.SetFormatter(&logrus.TextFormatter{
+		TimestampFormat: "2006/01/02 - 15:04:05",
+	})
 
 	app = kingpin.New("detector", "This is a component of dms called detector.")
 	app.Author("moooofly").Version(version.Version)
 
 	// global settings
-	isDebug = app.Flag("debug", "debug log output").Default("false").Bool()
+	dbg = app.Flag("debug", "output all kinds of logs to os.Stdout").Default("false").Bool()
+	prof = app.Flag("prof", "generate all kinds of profile into files").Default("false").Bool()
 	daemon := app.Flag("daemon", "run detector in background").Default("false").Bool()
 	forever := app.Flag("forever", "run detector in forever, fail and retry").Default("false").Bool()
-	logfile := app.Flag("log", "log file path").Default("").String()
+	logfile := app.Flag("log-file", "log file, e.g. '/opt/log/dms/xxx.log'").Default("").String()
+	confPath := app.Flag("conf-path", "config file path, e.g. '/opt/config/dms'").Default("conf").String()
 	nolog := app.Flag("nolog", "turn off logging").Default("false").Bool()
 
 	// sub command
@@ -62,7 +65,7 @@ func Init() (err error) {
 	Prober = kingpin.MustParse(app.Parse(os.Args[1:]))
 
 	// ini 配置解析
-	parser.Load(Prober)
+	parser.Load(Prober, *confPath)
 
 	var pb probe.Probe
 	switch Prober {
@@ -81,19 +84,47 @@ func Init() (err error) {
 	}
 	probe.Regist(Prober, pb, nil, logrus.StandardLogger())
 
-	if *isDebug {
+	// log setting
+	if *dbg {
+		Output = os.Stdout
+		logrus.SetOutput(Output)
+		logrus.SetLevel(logrus.DebugLevel)
+	} else {
+		if *nolog {
+			Output = ioutil.Discard
+			logrus.SetOutput(Output)
+		} else if *logfile != "" {
+			f, err := os.OpenFile(*logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+			if err != nil {
+				logrus.Fatal(err)
+			}
+			Output = f
+			logrus.SetOutput(Output)
+		} else if parser.DetectorSetting.LogFile != "" {
+			f, err := os.OpenFile(parser.DetectorSetting.LogFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+			if err != nil {
+				logrus.Fatal(err)
+			}
+			Output = f
+			logrus.SetOutput(Output)
+		} else {
+			Output = os.Stdout
+			logrus.SetOutput(Output)
+		}
+		l, err := logrus.ParseLevel(parser.DetectorSetting.LogLevel)
+		if err != nil {
+			logrus.Fatal(err)
+		}
+		logrus.Warningf("Update output log level to [%s]", parser.DetectorSetting.LogLevel)
+		logrus.SetLevel(l)
+	}
+
+	// pprof setting
+	if *prof {
 		startProfiling()
 	}
 
-	if *nolog {
-		logrus.SetOutput(ioutil.Discard)
-	} else if *logfile != "" {
-		f, e := os.OpenFile(*logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
-		if e != nil {
-			logrus.Fatal(e)
-		}
-		logrus.SetOutput(f)
-	}
+	// daemon setting
 	if *daemon {
 		args := []string{}
 		for _, arg := range os.Args[1:] {
@@ -176,15 +207,6 @@ func Init() (err error) {
 		}()
 		return
 	}
-	if *logfile == "" {
-		if *isDebug {
-			logrus.Println("[profiling] cpu profiling save to file: cpu.prof")
-			logrus.Println("[profiling] memory profiling save to file: memory.prof")
-			logrus.Println("[profiling] block profiling save to file: block.prof")
-			logrus.Println("[profiling] goroutine profiling save to file: goroutine.prof")
-			logrus.Println("[profiling] threadcreate profiling save to file: threadcreate.prof")
-		}
-	}
 
 	return
 }
@@ -194,7 +216,7 @@ func Teardown() {
 		logrus.Infof("clean process %d", cmd.Process.Pid)
 		cmd.Process.Kill()
 	}
-	if *isDebug {
+	if *prof {
 		saveProfiling()
 	}
 }

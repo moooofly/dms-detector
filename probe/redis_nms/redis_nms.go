@@ -81,7 +81,7 @@ func (s *RedisNmsProbe) detect() error {
 		s.log.Println("[detector/redis_nms]", err)
 		return err
 	} else {
-		s.log.Printf("[detector/redis_nms] connect Redis[%s] success\n", parser.RedisNmsSetting.Target)
+		s.log.Printf("[detector/redis_nms] connect Redis[%s] success", parser.RedisNmsSetting.Target)
 	}
 
 	if parser.RedisNmsSetting.Password != "" {

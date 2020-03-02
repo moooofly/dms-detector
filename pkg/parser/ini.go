@@ -20,52 +20,52 @@ var (
 
 // [detector] section in .ini
 type detector struct {
-	Port          int
-	ElectorClient string
-	ElectorHost   string
-	LogPath       string
-	LogLevel      string
+	Port        int    `ini:"port"`
+	ElectorHost string `ini:"elector-host"`
+	LogFile     string `ini:"log-file"`
+	LogLevel    string `ini:"log-level"`
 }
 
 // [mysql] section in .ini
 type mysql struct {
-	Target      string
-	User        string
-	Password    string
-	ConnTimeout int
-	Strict      string
+	Target      string `ini:"target"`
+	User        string `ini:"user"`
+	Password    string `ini:"password"`
+	ConnTimeout int    `ini:"connect-timeout"`
+	Strict      string `ini:"strict"`
 }
 
 // [redis] section in .ini
 type redis struct {
-	Target   string
-	Password string
-	Strict   string
+	Target   string `ini:"target"`
+	Password string `ini:"password"`
+	Strict   string `int:"strict"`
 }
 
 // [redis_nms] section in .ini
 type redisNms struct {
-	Target   string
-	Password string
-	Strict   string
+	Target   string `ini:"target"`
+	Password string `ini:"password"`
+	Strict   string `int:"strict"`
 }
 
 // [zookeeper] section in .ini
 type zk struct {
-	Target string
+	Target string `ini:"target"`
 }
 
 // [radar_server] section in .ini
 type radar struct {
-	Target string
+	Target string `ini:"target"`
 }
 
-func Load(prober string) {
-	// TODO: 路径问题
+func Load(prober string, confPath string) {
+	cf := fmt.Sprintf("%s/detector.%s.ini", confPath, prober)
+
 	var err error
-	cfg, err = ini.Load(fmt.Sprintf("conf/detector.%s.ini", prober))
+	cfg, err = ini.Load(cf)
 	if err != nil {
-		logrus.Fatalf("Fail to parse 'conf/detector.%s.ini': %v", prober, err)
+		logrus.Fatalf("Fail to parse '%s': %v", cf, err)
 	}
 
 	mapTo("detector", DetectorSetting)
