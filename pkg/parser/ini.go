@@ -12,6 +12,7 @@ var (
 
 	DetectorSetting = &detector{}
 	MySQLSetting    = &mysql{}
+	HighgoSetting   = &highgo{}
 	RedisSetting    = &redis{}
 	RedisNmsSetting = &redisNms{}
 	ZkSetting       = &zk{}
@@ -31,6 +32,16 @@ type mysql struct {
 	Target      string `ini:"target"`
 	User        string `ini:"user"`
 	Password    string `ini:"password"`
+	ConnTimeout int    `ini:"connect-timeout"`
+	Strict      string `ini:"strict"`
+}
+
+// [highgo] section in .ini
+type highgo struct {
+	Target      string `ini:"target"`
+	User        string `ini:"user"`
+	Password    string `ini:"password"`
+	Database    string `ini:"database"`
 	ConnTimeout int    `ini:"connect-timeout"`
 	Strict      string `ini:"strict"`
 }
@@ -73,6 +84,8 @@ func Load(prober string, confPath string) {
 	switch prober {
 	case "mysql":
 		mapTo(prober, MySQLSetting)
+	case "highgo":
+		mapTo(prober, HighgoSetting)
 	case "redis":
 		mapTo(prober, RedisSetting)
 	case "redis_nms":
@@ -82,7 +95,7 @@ func Load(prober string, confPath string) {
 	case "zookeeper":
 		mapTo(prober, ZkSetting)
 	default:
-		logrus.Fatal("not match any of [mysql|redis|redis_nms|radar_server|zookeeper].")
+		logrus.Fatal("not match any of [mysql|highgo|redis|redis_nms|radar_server|zookeeper].")
 	}
 }
 
