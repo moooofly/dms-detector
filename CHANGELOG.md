@@ -1,3 +1,9 @@
+## 0.3.0 (2020-04-02)
+
+* feat: support highgo (postgres) detect ability ([50c03af](https://github.com/moooofly/dms-detector/commit/50c03af))
+
+
+
 ## 0.2.0 (2020-03-02)
 
 * improvement: support confPath ([cd68b44](https://github.com/moooofly/dms-detector/commit/cd68b44))
