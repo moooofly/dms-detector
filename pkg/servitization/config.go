@@ -13,6 +13,7 @@ import (
 	"github.com/moooofly/dms-detector/pkg/parser"
 	"github.com/moooofly/dms-detector/pkg/version"
 	"github.com/moooofly/dms-detector/probe"
+	"github.com/moooofly/dms-detector/probe/highgo"
 	"github.com/moooofly/dms-detector/probe/mysql"
 	"github.com/moooofly/dms-detector/probe/radar_server"
 	"github.com/moooofly/dms-detector/probe/redis"
@@ -57,6 +58,7 @@ func Init() (err error) {
 
 	// sub command
 	_ = app.Command("mysql", "prober for mysql")
+	_ = app.Command("highgo", "prober for highgo")
 	_ = app.Command("redis", "prober for redis")
 	_ = app.Command("redis_nms", "prober for redis_nms")
 	_ = app.Command("radar", "prober for radar_server")
@@ -71,6 +73,8 @@ func Init() (err error) {
 	switch Prober {
 	case "mysql":
 		pb = mysql.NewMySQLProbe()
+	case "highgo":
+		pb = highgo.NewHighgoProbe()
 	case "redis":
 		pb = redis.NewRedisProbe()
 	case "redis_nms":
@@ -80,7 +84,7 @@ func Init() (err error) {
 	case "zookeeper":
 		pb = zookeeper.NewZkProbe()
 	default:
-		logrus.Fatal("not match any of [mysql|redis|redis_nms|radar_server|zookeeper].")
+		logrus.Fatal("not match any of [mysql|highgo|redis|redis_nms|radar_server|zookeeper].")
 	}
 	probe.Regist(Prober, pb, nil, logrus.StandardLogger())
 
